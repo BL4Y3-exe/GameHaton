@@ -64,8 +64,8 @@ All errors use:
 | --- | --- | --- | --- |
 | GET | `/api/health` | No | Working |
 | POST | `/api/auth/demo` | No | Working |
-| GET | `/api/auth/steam` | No | Placeholder |
-| GET | `/api/auth/steam/callback` | No | Placeholder |
+| GET | `/api/auth/steam` | No | Working when Supabase is configured |
+| GET | `/api/auth/steam/callback` | No | Steam callback and JWT redirect |
 | GET | `/api/user/me` | Yes | Working |
 | POST | `/api/library/sync` | Yes | Working with demo data |
 | GET | `/api/library` | Yes | Working with demo data |
@@ -77,6 +77,31 @@ All errors use:
 The first demo login creates one in-memory demo account. Later demo logins reuse
 the same stable user for the lifetime of the server process. The flow does not
 need Steam or Supabase credentials.
+
+## Steam login
+
+Steam authentication uses OpenID and does not require a Steam API key. Set
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BACKEND_URL`,
+`STEAM_RETURN_URL`, and `FRONTEND_URL`, then open:
+
+```text
+http://localhost:5000/api/auth/steam
+```
+
+After Steam verifies the account, the backend upserts the user in Supabase,
+issues a seven-day JWT, and redirects to:
+
+```text
+FRONTEND_URL?token=JWT_TOKEN
+```
+
+`STEAM_API_KEY` is optional for login. When present, it is used to save the
+Steam display name and avatar. Without it, the account is still created with a
+fallback display name. Authentication failures redirect to
+`FRONTEND_URL?steam_error=ERROR_CODE`.
+
+For Render, update `BACKEND_URL` and `STEAM_RETURN_URL` to the deployed HTTPS
+URL. Demo login remains available even when Steam or Supabase is not configured.
 
 The demo library contains 14 games with varied playtime, last-played dates,
 genres, tags, Steam images, and store URLs. Revival Queue returns the top eight

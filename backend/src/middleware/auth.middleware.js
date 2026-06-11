@@ -1,9 +1,9 @@
 const jwt = require("jsonwebtoken");
 const env = require("../config/env");
-const demoService = require("../services/demo.service");
+const userService = require("../services/user.service");
 const { sendError } = require("../utils/response");
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const authorization = req.get("authorization");
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
@@ -19,7 +19,7 @@ function requireAuth(req, res, next) {
 
   try {
     const payload = jwt.verify(token, env.jwtSecret);
-    const user = demoService.getUserById(payload.sub);
+    const user = await userService.getUserById(payload.sub);
 
     if (!user) {
       return sendError(res, "User not found", "USER_NOT_FOUND", 401);
@@ -29,6 +29,10 @@ function requireAuth(req, res, next) {
     req.user = user;
     return next();
   } catch (error) {
+    if (error.code === "SUPABASE_ERROR") {
+      return next(error);
+    }
+
     const code =
       error.name === "TokenExpiredError" ? "TOKEN_EXPIRED" : "INVALID_TOKEN";
     return sendError(res, "Invalid or expired token", code, 401);

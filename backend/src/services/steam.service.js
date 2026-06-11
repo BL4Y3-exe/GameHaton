@@ -1,10 +1,169 @@
 const env = require("../config/env");
 
+const STEAM_OPENID_ENDPOINT = "https://steamcommunity.com/openid/login";
+const STEAM_ID_PATTERN =
+  /^https:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/;
+const REQUEST_TIMEOUT_MS = 8000;
+
+function getLoginUrl() {
+  const url = new URL(STEAM_OPENID_ENDPOINT);
+  url.searchParams.set("openid.ns", "http://specs.openid.net/auth/2.0");
+  url.searchParams.set("openid.mode", "checkid_setup");
+  url.searchParams.set("openid.return_to", env.steamReturnUrl);
+  url.searchParams.set("openid.realm", new URL(env.backendUrl).origin);
+  url.searchParams.set(
+    "openid.identity",
+    "http://specs.openid.net/auth/2.0/identifier_select",
+  );
+  url.searchParams.set(
+    "openid.claimed_id",
+    "http://specs.openid.net/auth/2.0/identifier_select",
+  );
+  return url.toString();
+}
+
+async function verifyOpenIdCallback(query, options = {}) {
+  if (query["openid.mode"] !== "id_res") {
+    throw createError(
+      "Steam authentication was cancelled",
+      "STEAM_AUTH_CANCELLED",
+      401,
+    );
+  }
+
+  if (
+    query["openid.op_endpoint"] !== STEAM_OPENID_ENDPOINT ||
+    query["openid.return_to"] !== env.steamReturnUrl
+  ) {
+    throw createError(
+      "Steam returned an unexpected callback target",
+      "STEAM_AUTH_INVALID",
+      401,
+    );
+  }
+
+  const claimedId = query["openid.claimed_id"];
+  const steamId = extractSteamId(claimedId);
+
+  if (!steamId) {
+    throw createError(
+      "Steam returned an invalid claimed ID",
+      "INVALID_STEAM_ID",
+      401,
+    );
+  }
+
+  const verificationParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (key.startsWith("openid.") && typeof value === "string") {
+      verificationParams.set(key, value);
+    }
+  }
+
+  verificationParams.set("openid.mode", "check_authentication");
+
+  const response = await fetchWithTimeout(
+    STEAM_OPENID_ENDPOINT,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: verificationParams,
+    },
+    options.fetchImpl,
+  );
+  const verification = await response.text();
+
+  if (!response.ok || !/^is_valid:true$/m.test(verification)) {
+    throw createError(
+      "Steam could not verify this login",
+      "STEAM_AUTH_INVALID",
+      401,
+    );
+  }
+
+  return steamId;
+}
+
+async function getPlayerProfile(steamId, options = {}) {
+  const fallback = {
+    steamId,
+    displayName: `Steam User ${steamId.slice(-4)}`,
+    avatarUrl: null,
+  };
+
+  if (!env.steamApiKey) {
+    return fallback;
+  }
+
+  try {
+    const url = new URL(
+      "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/",
+    );
+    url.searchParams.set("key", env.steamApiKey);
+    url.searchParams.set("steamids", steamId);
+
+    const response = await fetchWithTimeout(url, {}, options.fetchImpl);
+
+    if (!response.ok) {
+      return fallback;
+    }
+
+    const payload = await response.json();
+    const player = payload.response?.players?.[0];
+
+    if (!player) {
+      return fallback;
+    }
+
+    return {
+      steamId,
+      displayName: player.personaname || fallback.displayName,
+      avatarUrl: player.avatarfull || player.avatarmedium || null,
+    };
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function extractSteamId(claimedId) {
+  const match = String(claimedId || "").match(STEAM_ID_PATTERN);
+  return match ? match[1] : null;
+}
+
+async function fetchWithTimeout(url, options = {}, fetchImpl = global.fetch) {
+  if (typeof fetchImpl !== "function") {
+    throw createError("Fetch API is unavailable", "STEAM_REQUEST_FAILED");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetchImpl(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function getSteamStatus() {
   return {
-    configured: Boolean(env.steamApiKey),
-    mock_mode: env.useMockSteam,
+    openIdConfigured: Boolean(env.steamReturnUrl && env.backendUrl),
+    profileApiConfigured: Boolean(env.steamApiKey),
   };
 }
 
-module.exports = { getSteamStatus };
+function createError(message, code, statusCode = 502) {
+  const error = new Error(message);
+  error.code = code;
+  error.statusCode = statusCode;
+  return error;
+}
+
+module.exports = {
+  getLoginUrl,
+  verifyOpenIdCallback,
+  getPlayerProfile,
+  extractSteamId,
+  getSteamStatus,
+};
