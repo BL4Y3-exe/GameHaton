@@ -85,9 +85,28 @@ reason for each recommendation.
 
 ## Supabase schema
 
-Run [`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql)
-in the Supabase SQL editor when database integration begins. The current demo
-mode keeps its data in code and does not require a database connection.
+The schema is in
+[`supabase/migrations/001_initial_schema.sql`](supabase/migrations/001_initial_schema.sql).
+It creates the `users`, `games`, and `user_games` tables in the `public`
+schema.
+
+To run it in Supabase:
+
+1. Open your project in the [Supabase dashboard](https://supabase.com/dashboard).
+2. Select **SQL Editor** from the project sidebar.
+3. Choose **New query**.
+4. Paste the contents of `supabase/migrations/001_initial_schema.sql`.
+5. Click **Run**.
+6. Open **Table Editor** and confirm that `users`, `games`, and `user_games`
+   exist.
+
+The migration uses `if not exists`, so it can be rerun safely while setting up
+a fresh MVP project. If an older version of these tables already exists,
+`create table if not exists` will not change its columns; apply the missing
+columns manually or recreate the development tables before rerunning it.
+
+The current demo mode keeps its data in code and does not require a Supabase
+connection yet.
 
 ## Render deployment
 

@@ -12,7 +12,7 @@ create table if not exists public.users (
 
 create table if not exists public.games (
   id uuid primary key default gen_random_uuid(),
-  appid bigint not null unique,
+  appid integer not null unique,
   name text not null,
   image text,
   genres jsonb not null default '[]'::jsonb,
@@ -25,7 +25,9 @@ create table if not exists public.games (
 create table if not exists public.user_games (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users(id) on delete cascade,
-  appid bigint not null,
+  appid integer not null,
+  name text not null,
+  image text,
   playtime_minutes integer not null default 0,
   playtime_hours numeric(10, 1) not null default 0,
   last_played_at timestamptz,
@@ -37,3 +39,6 @@ create table if not exists public.user_games (
 
 create index if not exists user_games_user_id_idx
   on public.user_games(user_id);
+
+create index if not exists user_games_appid_idx
+  on public.user_games(appid);
