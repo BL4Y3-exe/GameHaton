@@ -79,9 +79,10 @@ the same stable user for the lifetime of the server process. The flow does not
 need Steam or Supabase credentials.
 
 The demo library contains 14 games with varied playtime, last-played dates,
-genres, tags, Steam images, and store URLs. Revival Queue scores games using
-playtime, inactivity, popularity, and a discount boost, and includes a readable
-reason for each recommendation.
+genres, tags, Steam images, and store URLs. Revival Queue returns the top eight
+games that have been inactive for at least 60 days. Its 0-100 score uses
+playtime (40 points), inactivity (35), popularity (15), and a current
+discount/free boost (10). Every result includes a readable reason.
 
 ## Supabase schema
 
