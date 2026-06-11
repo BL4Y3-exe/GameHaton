@@ -1,14 +1,24 @@
 const dealsService = require("../services/deals.service");
 const { sendSuccess } = require("../utils/response");
 
-function getFreeGames(req, res) {
-  const games = dealsService.getFreeGames();
-  return sendSuccess(res, { games, count: games.length, source: "demo" });
+async function getFreeGames(req, res) {
+  const result = await dealsService.getCurrentFreeGames();
+  return sendSuccess(res, {
+    games: result.items,
+    count: result.items.length,
+    source: result.source,
+    cached: result.cached,
+  });
 }
 
-function getSales(req, res) {
-  const sales = dealsService.getSales();
-  return sendSuccess(res, { sales, count: sales.length, source: "demo" });
+async function getSales(req, res) {
+  const result = await dealsService.getCurrentSales();
+  return sendSuccess(res, {
+    sales: result.items,
+    count: result.items.length,
+    source: result.source,
+    cached: result.cached,
+  });
 }
 
 module.exports = { getFreeGames, getSales };

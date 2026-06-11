@@ -70,8 +70,8 @@ All errors use:
 | POST | `/api/library/sync` | Yes | Working with demo data |
 | GET | `/api/library` | Yes | Working with demo data |
 | GET | `/api/revival-queue` | Yes | Working with scored demo data |
-| GET | `/api/free-games` | No | Working with demo data |
-| GET | `/api/sales` | No | Working with demo data |
+| GET | `/api/free-games` | No | GamerPower with mock fallback |
+| GET | `/api/sales` | No | CheapShark with mock fallback |
 | GET | `/api/dashboard/summary` | Yes | Working with demo data |
 
 The first demo login creates one in-memory demo account. Later demo logins reuse
@@ -83,6 +83,27 @@ genres, tags, Steam images, and store URLs. Revival Queue returns the top eight
 games that have been inactive for at least 60 days. Its 0-100 score uses
 playtime (40 points), inactivity (35), popularity (15), and a current
 discount/free boost (10). Every result includes a readable reason.
+
+Free Games uses the keyless GamerPower API, and Sales Radar uses the keyless
+CheapShark API. Results are cached in memory for 10 minutes. If either service
+times out, fails, or returns no usable games, the endpoint returns normalized
+mock data so the demo remains functional.
+
+Both deal endpoints normalize games to:
+
+```json
+{
+  "appid": 292030,
+  "name": "The Witcher 3: Wild Hunt",
+  "image": "https://example.com/game.jpg",
+  "originalPrice": 39.99,
+  "currentPrice": 7.99,
+  "discountPercent": 80,
+  "isFree": false,
+  "source": "CheapShark",
+  "storeUrl": "https://example.com/deal"
+}
+```
 
 ## Supabase schema
 
