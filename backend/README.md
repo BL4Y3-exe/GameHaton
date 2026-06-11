@@ -67,8 +67,8 @@ All errors use:
 | GET | `/api/auth/steam` | No | Working when Supabase is configured |
 | GET | `/api/auth/steam/callback` | No | Steam callback and JWT redirect |
 | GET | `/api/user/me` | Yes | Working |
-| POST | `/api/library/sync` | Yes | Working with demo data |
-| GET | `/api/library` | Yes | Working with demo data |
+| POST | `/api/library/sync` | Yes | Demo or Steam Web API sync |
+| GET | `/api/library` | Yes | Demo data or saved Supabase games |
 | GET | `/api/revival-queue` | Yes | Working with scored demo data |
 | GET | `/api/free-games` | No | GamerPower with mock fallback |
 | GET | `/api/sales` | No | CheapShark with mock fallback |
@@ -102,6 +102,34 @@ fallback display name. Authentication failures redirect to
 
 For Render, update `BACKEND_URL` and `STEAM_RETURN_URL` to the deployed HTTPS
 URL. Demo login remains available even when Steam or Supabase is not configured.
+
+## Steam library sync
+
+`POST /api/library/sync` uses mock games for the demo account. For a real Steam
+user, it calls Steam's `GetOwnedGames` API and saves normalized rows to
+Supabase's `user_games` table. Real sync requires `STEAM_API_KEY` and a public
+Steam game-details setting.
+
+`GET /api/library` returns mock games for the demo account and saved
+`user_games` rows for real accounts. Both endpoints return:
+
+```json
+{
+  "appid": 620,
+  "name": "Portal 2",
+  "image": "https://example.com/portal.jpg",
+  "playtimeMinutes": 1200,
+  "playtimeHours": 20,
+  "lastPlayedAt": "2025-01-01T00:00:00.000Z",
+  "genres": [],
+  "tags": [],
+  "storeUrl": "https://store.steampowered.com/app/620"
+}
+```
+
+Steam's owned-games response does not include genres or tags, so those fields
+start as empty arrays and can be enriched later. Steam API and private-library
+failures use the standard error response without stopping the server.
 
 The demo library contains 14 games with varied playtime, last-played dates,
 genres, tags, Steam images, and store URLs. Revival Queue returns the top eight

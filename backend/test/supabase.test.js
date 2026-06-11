@@ -53,3 +53,50 @@ test("upserts a Steam user through Supabase REST", async () => {
     env.supabaseServiceRoleKey = originalKey;
   }
 });
+
+test("bulk upserts normalized user games", async () => {
+  const originalUrl = env.supabaseUrl;
+  const originalKey = env.supabaseServiceRoleKey;
+  env.supabaseUrl = "https://example.supabase.co";
+  env.supabaseServiceRoleKey = "service-role-key";
+
+  try {
+    const rows = await supabase.upsertUserGames(
+      "00000000-0000-4000-8000-000000000099",
+      [
+        {
+          appid: 620,
+          name: "Portal 2",
+          image: "https://example.com/portal.jpg",
+          playtimeMinutes: 1200,
+          playtimeHours: 20,
+          lastPlayedAt: "2025-01-01T00:00:00.000Z",
+          genres: ["Puzzle"],
+          tags: ["Co-op"],
+          storeUrl: "https://store.steampowered.com/app/620",
+        },
+      ],
+      {
+        fetchImpl: async (url, options) => {
+          assert.equal(
+            url.toString(),
+            "https://example.supabase.co/rest/v1/user_games?on_conflict=user_id%2Cappid",
+          );
+          const body = JSON.parse(options.body);
+          assert.equal(body[0].playtime_minutes, 1200);
+          assert.deepEqual(body[0].metadata.genres, ["Puzzle"]);
+
+          return {
+            ok: true,
+            json: async () => body,
+          };
+        },
+      },
+    );
+
+    assert.equal(rows.length, 1);
+  } finally {
+    env.supabaseUrl = originalUrl;
+    env.supabaseServiceRoleKey = originalKey;
+  }
+});

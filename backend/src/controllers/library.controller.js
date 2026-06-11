@@ -1,13 +1,14 @@
 const libraryService = require("../services/library.service");
 const { sendSuccess } = require("../utils/response");
 
-function getLibrary(req, res) {
-  const games = libraryService.getUserLibrary(req.user);
+async function getLibrary(req, res) {
+  const games = await libraryService.getSavedUserLibrary(req.user);
   return sendSuccess(res, { games, count: games.length });
 }
 
-function syncLibrary(req, res) {
-  return sendSuccess(res, libraryService.syncUserLibrary(req.user));
+async function syncLibrary(req, res) {
+  const result = await libraryService.syncUserLibrary(req.user);
+  return sendSuccess(res, result);
 }
 
 module.exports = { getLibrary, syncLibrary };

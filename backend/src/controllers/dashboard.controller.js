@@ -9,7 +9,7 @@ function getSummary(req, res) {
   const freeGames = dealsService.getFreeGames();
   const sales = dealsService.getSales();
   const totalPlaytimeHours = games.reduce(
-    (total, game) => total + game.playtime_minutes / 60,
+    (total, game) => total + game.playtimeMinutes / 60,
     0,
   );
 

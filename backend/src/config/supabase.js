@@ -53,6 +53,60 @@ async function getUserById(userId, options = {}) {
   return users[0] || null;
 }
 
+async function upsertUserGames(userId, games, options = {}) {
+  ensureConfigured();
+
+  if (games.length === 0) {
+    return [];
+  }
+
+  const fetchImpl = options.fetchImpl || global.fetch;
+  const endpoint = new URL("/rest/v1/user_games", env.supabaseUrl);
+  endpoint.searchParams.set("on_conflict", "user_id,appid");
+  const timestamp = new Date().toISOString();
+  const rows = games.map((game) => ({
+    user_id: userId,
+    appid: game.appid,
+    name: game.name,
+    image: game.image,
+    playtime_minutes: game.playtimeMinutes,
+    playtime_hours: game.playtimeHours,
+    last_played_at: game.lastPlayedAt,
+    metadata: {
+      genres: game.genres,
+      tags: game.tags,
+      storeUrl: game.storeUrl,
+    },
+    updated_at: timestamp,
+  }));
+
+  const response = await fetchImpl(endpoint, {
+    method: "POST",
+    headers: getHeaders({
+      Prefer: "resolution=merge-duplicates,return=representation",
+    }),
+    body: JSON.stringify(rows),
+  });
+
+  return parseResponse(response, "save Steam library");
+}
+
+async function getUserGames(userId, options = {}) {
+  ensureConfigured();
+
+  const fetchImpl = options.fetchImpl || global.fetch;
+  const endpoint = new URL("/rest/v1/user_games", env.supabaseUrl);
+  endpoint.searchParams.set("user_id", `eq.${userId}`);
+  endpoint.searchParams.set("select", "*");
+  endpoint.searchParams.set("order", "playtime_minutes.desc");
+
+  const response = await fetchImpl(endpoint, {
+    headers: getHeaders(),
+  });
+
+  return parseResponse(response, "load saved library");
+}
+
 function getHeaders(extraHeaders = {}) {
   return {
     apikey: env.supabaseServiceRoleKey,
@@ -97,4 +151,6 @@ module.exports = {
   isSupabaseConfigured,
   upsertSteamUser,
   getUserById,
+  upsertUserGames,
+  getUserGames,
 };

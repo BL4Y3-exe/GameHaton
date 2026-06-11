@@ -74,3 +74,41 @@ test("rejects an invalid Steam verification response", async () => {
     { code: "STEAM_AUTH_INVALID" },
   );
 });
+
+test("normalizes owned Steam games", () => {
+  const game = steamService.normalizeOwnedGame({
+    appid: 620,
+    name: "Portal 2",
+    playtime_forever: 1234,
+    rtime_last_played: 1735689600,
+    img_icon_url: "icon-hash",
+  });
+
+  assert.deepEqual(game, {
+    appid: 620,
+    name: "Portal 2",
+    image:
+      "https://media.steampowered.com/steamcommunity/public/images/apps/620/icon-hash.jpg",
+    playtimeMinutes: 1234,
+    playtimeHours: 20.6,
+    lastPlayedAt: "2025-01-01T00:00:00.000Z",
+    genres: [],
+    tags: [],
+    storeUrl: "https://store.steampowered.com/app/620",
+  });
+});
+
+test("returns a clean error when Steam API key is missing", async () => {
+  const env = require("../src/config/env");
+  const originalKey = env.steamApiKey;
+  env.steamApiKey = "";
+
+  try {
+    await assert.rejects(
+      steamService.getOwnedGames("76561198000000000"),
+      { code: "STEAM_API_KEY_MISSING", statusCode: 503 },
+    );
+  } finally {
+    env.steamApiKey = originalKey;
+  }
+});

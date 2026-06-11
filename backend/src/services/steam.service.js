@@ -126,6 +126,95 @@ async function getPlayerProfile(steamId, options = {}) {
   }
 }
 
+async function getOwnedGames(steamId, options = {}) {
+  if (!env.steamApiKey) {
+    throw createError(
+      "STEAM_API_KEY is required to sync a Steam library",
+      "STEAM_API_KEY_MISSING",
+      503,
+    );
+  }
+
+  const url = new URL(
+    "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/",
+  );
+  url.searchParams.set("key", env.steamApiKey);
+  url.searchParams.set("steamid", steamId);
+  url.searchParams.set("include_appinfo", "true");
+  url.searchParams.set("include_played_free_games", "true");
+  url.searchParams.set("format", "json");
+
+  let response;
+
+  try {
+    response = await fetchWithTimeout(url, {}, options.fetchImpl);
+  } catch (error) {
+    throw createError(
+      "Could not reach the Steam Web API",
+      "STEAM_API_UNAVAILABLE",
+      502,
+    );
+  }
+
+  if (!response.ok) {
+    throw createError(
+      `Steam Web API returned HTTP ${response.status}`,
+      "STEAM_API_ERROR",
+      502,
+    );
+  }
+
+  let payload;
+
+  try {
+    payload = await response.json();
+  } catch (error) {
+    throw createError(
+      "Steam Web API returned an invalid response",
+      "STEAM_API_ERROR",
+      502,
+    );
+  }
+
+  const games = payload.response?.games;
+
+  if (!Array.isArray(games)) {
+    throw createError(
+      "Steam library is private or unavailable",
+      "STEAM_LIBRARY_UNAVAILABLE",
+      403,
+    );
+  }
+
+  return games.map(normalizeOwnedGame).filter(Boolean);
+}
+
+function normalizeOwnedGame(game) {
+  const appid = Number(game.appid);
+
+  if (!Number.isInteger(appid) || appid <= 0 || !game.name) {
+    return null;
+  }
+
+  const playtimeMinutes = Math.max(0, Number(game.playtime_forever) || 0);
+
+  return {
+    appid,
+    name: game.name,
+    image: game.img_icon_url
+      ? `https://media.steampowered.com/steamcommunity/public/images/apps/${appid}/${game.img_icon_url}.jpg`
+      : `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`,
+    playtimeMinutes,
+    playtimeHours: Number((playtimeMinutes / 60).toFixed(1)),
+    lastPlayedAt: game.rtime_last_played
+      ? new Date(Number(game.rtime_last_played) * 1000).toISOString()
+      : null,
+    genres: [],
+    tags: [],
+    storeUrl: `https://store.steampowered.com/app/${appid}`,
+  };
+}
+
 function extractSteamId(claimedId) {
   const match = String(claimedId || "").match(STEAM_ID_PATTERN);
   return match ? match[1] : null;
@@ -164,6 +253,8 @@ module.exports = {
   getLoginUrl,
   verifyOpenIdCallback,
   getPlayerProfile,
+  getOwnedGames,
+  normalizeOwnedGame,
   extractSteamId,
   getSteamStatus,
 };

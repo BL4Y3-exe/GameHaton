@@ -10,7 +10,7 @@ test("demo Revival Queue returns ranked inactive games", () => {
   assert.equal(recommendations.length, 8);
 
   for (const recommendation of recommendations) {
-    assert.ok(recommendation.playtime_minutes > 0);
+    assert.ok(recommendation.playtimeMinutes > 0);
     assert.ok(recommendation.days_since_played >= 60);
     assert.ok(recommendation.revivalScore >= 0);
     assert.ok(recommendation.revivalScore <= 100);

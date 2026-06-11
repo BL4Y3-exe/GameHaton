@@ -5,6 +5,21 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_INACTIVITY_DAYS = 60;
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 10;
+const RECOGNIZABLE_APP_IDS = new Set([
+  400,
+  620,
+  730,
+  105600,
+  289070,
+  292030,
+  367520,
+  413150,
+  1086940,
+  1091500,
+  1145360,
+  1174180,
+  1245620,
+]);
 
 function getRevivalQueue(user, limit = DEFAULT_LIMIT) {
   const saleAppIds = new Set(dealsService.getSales().map((deal) => deal.appid));
@@ -27,15 +42,17 @@ function getRevivalQueue(user, limit = DEFAULT_LIMIT) {
       (a, b) =>
         b.revivalScore - a.revivalScore ||
         b.days_since_played - a.days_since_played ||
-        b.playtime_minutes - a.playtime_minutes,
+        b.playtimeMinutes - a.playtimeMinutes,
     )
     .slice(0, resultLimit);
 }
 
 function scoreGame(game, availability = {}) {
-  const daysSincePlayed = getDaysSincePlayed(game.last_played_at);
+  const daysSincePlayed = getDaysSincePlayed(
+    game.lastPlayedAt || game.last_played_at,
+  );
   const playtimeHours = getPlaytimeHours(game);
-  const popularity = clamp(Number(game.popularity) || 0, 0, 100);
+  const popularity = getPopularity(game);
   const isDiscounted = Boolean(availability.isDiscounted);
   const isFree = Boolean(availability.isFree);
 
@@ -70,9 +87,9 @@ function scoreGame(game, availability = {}) {
 
 function hasPlayHistory(game) {
   return (
-    Number(game.playtime_minutes) > 0 &&
-    Boolean(game.last_played_at) &&
-    Number.isFinite(new Date(game.last_played_at).getTime())
+    Number(game.playtimeMinutes) > 0 &&
+    Boolean(game.lastPlayedAt) &&
+    Number.isFinite(new Date(game.lastPlayedAt).getTime())
   );
 }
 
@@ -84,13 +101,28 @@ function getDaysSincePlayed(lastPlayedAt) {
 }
 
 function getPlaytimeHours(game) {
-  const hours = Number(game.playtime_hours);
+  const hours = Number(game.playtimeHours ?? game.playtime_hours);
 
   if (Number.isFinite(hours)) {
     return Math.max(0, hours);
   }
 
-  return Math.max(0, Number(game.playtime_minutes) || 0) / 60;
+  return (
+    Math.max(
+      0,
+      Number(game.playtimeMinutes ?? game.playtime_minutes) || 0,
+    ) / 60
+  );
+}
+
+function getPopularity(game) {
+  const explicitPopularity = Number(game.popularity);
+
+  if (Number.isFinite(explicitPopularity)) {
+    return clamp(explicitPopularity, 0, 100);
+  }
+
+  return RECOGNIZABLE_APP_IDS.has(Number(game.appid)) ? 90 : 50;
 }
 
 function buildReason(details) {
