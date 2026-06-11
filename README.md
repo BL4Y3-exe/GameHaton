@@ -1,1 +1,1 @@
-# GameHaton prject
+# GameHaton project
