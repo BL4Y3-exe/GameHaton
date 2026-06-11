@@ -74,9 +74,14 @@ All errors use:
 | GET | `/api/sales` | No | Working with demo data |
 | GET | `/api/dashboard/summary` | Yes | Working with demo data |
 
-The demo library contains 14 games. Revival Queue scores games using playtime,
-inactivity, popularity, and a discount boost, and includes a readable reason
-for each recommendation.
+The first demo login creates one in-memory demo account. Later demo logins reuse
+the same stable user for the lifetime of the server process. The flow does not
+need Steam or Supabase credentials.
+
+The demo library contains 14 games with varied playtime, last-played dates,
+genres, tags, Steam images, and store URLs. Revival Queue scores games using
+playtime, inactivity, popularity, and a discount boost, and includes a readable
+reason for each recommendation.
 
 ## Supabase schema
 

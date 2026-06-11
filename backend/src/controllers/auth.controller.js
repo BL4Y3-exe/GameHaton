@@ -4,7 +4,7 @@ const demoService = require("../services/demo.service");
 const { sendSuccess, sendError } = require("../utils/response");
 
 function demoLogin(req, res) {
-  const user = demoService.getDemoUser();
+  const user = demoService.getOrCreateDemoUser();
   const token = jwt.sign(
     {
       sub: user.id,
