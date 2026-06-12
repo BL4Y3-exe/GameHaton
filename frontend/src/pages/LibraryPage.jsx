@@ -4,18 +4,22 @@ import PageHeader from '../components/layout/PageHeader.jsx';
 import GameCard from '../components/cards/GameCard.jsx';
 import LoadingState from '../components/common/LoadingState.jsx';
 import EmptyState from '../components/common/EmptyState.jsx';
+import ErrorState from '../components/common/ErrorState.jsx';
 import { getLibrary } from '../services/api.js';
 
 export default function LibraryPage() {
   const [games, setGames] = useState([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    getLibrary().then((data) => {
-      setGames(data);
-      setLoading(false);
-    });
+    getLibrary()
+      .then(setGames)
+      .catch((requestError) => {
+        setError(requestError.message || 'Could not load library.');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const filteredGames = useMemo(() => {
@@ -23,6 +27,7 @@ export default function LibraryPage() {
   }, [games, query]);
 
   if (loading) return <LoadingState label="Loading library" />;
+  if (error) return <ErrorState message={error} />;
 
   return (
     <>

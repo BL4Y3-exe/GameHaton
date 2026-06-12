@@ -3,6 +3,7 @@ import { Gamepad2, Gift, Library, RefreshCw, Timer } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import Button from '../components/common/Button.jsx';
 import LoadingState from '../components/common/LoadingState.jsx';
+import ErrorState from '../components/common/ErrorState.jsx';
 import StatCard from '../components/cards/StatCard.jsx';
 import RecommendationCard from '../components/cards/RecommendationCard.jsx';
 import DealCard from '../components/cards/DealCard.jsx';
@@ -14,25 +15,44 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const [user, summary, queue, freeGames, sales] = await Promise.all([
-        getCurrentUser(),
-        getDashboardSummary(),
-        getRevivalQueue(),
-        getFreeGames(),
-        getSales(),
-      ]);
-      setState({ loading: false, user, summary, queue, deals: [...freeGames, ...sales] });
+      try {
+        const [user, summary, queue, freeGames, sales] = await Promise.all([
+          getCurrentUser(),
+          getDashboardSummary(),
+          getRevivalQueue(),
+          getFreeGames(),
+          getSales(),
+        ]);
+        setState({ loading: false, user, summary, queue, deals: [...freeGames, ...sales] });
+      } catch (error) {
+        setState({ loading: false, error: error.message || 'Could not load dashboard.' });
+      }
     }
     load();
   }, []);
 
   async function handleSync() {
     setSyncing(true);
-    await syncLibrary();
-    setSyncing(false);
+
+    try {
+      await syncLibrary();
+      const [summary, queue] = await Promise.all([
+        getDashboardSummary(),
+        getRevivalQueue(),
+      ]);
+      setState((current) => ({ ...current, summary, queue }));
+    } catch (error) {
+      setState((current) => ({
+        ...current,
+        error: error.message || 'Could not sync Steam library.',
+      }));
+    } finally {
+      setSyncing(false);
+    }
   }
 
   if (state.loading) return <LoadingState label="Preparing dashboard" />;
+  if (state.error) return <ErrorState message={state.error} />;
 
   const stats = [
     { label: 'Total games', value: state.summary.totalGames, icon: Library, tone: 'text-electric' },

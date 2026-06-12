@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Flame, Gamepad2, Gift, LayoutDashboard, Library, LogOut, RefreshCw } from 'lucide-react';
 import Button from '../common/Button.jsx';
-import { logout } from '../../services/auth.js';
+import { getStoredUser, logout } from '../../services/auth.js';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -12,6 +12,7 @@ const navItems = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const user = getStoredUser();
 
   function handleLogout() {
     logout();
@@ -25,7 +26,7 @@ export default function Sidebar() {
           <Gamepad2 className="h-5 w-5" />
         </span>
         <div>
-          <p className="font-black">GameHaton</p>
+          <p className="font-black">Encore</p>
           <p className="text-xs text-slate-400">Revival dashboard</p>
         </div>
       </div>
@@ -47,11 +48,13 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="mt-8 hidden rounded-lg border border-ember/25 bg-ember/10 p-4 md:block">
-        <Flame className="h-5 w-5 text-ember" />
-        <p className="mt-3 text-sm font-bold">Demo mode active</p>
-        <p className="mt-1 text-xs leading-5 text-slate-400">Mock data is wired to match the backend contract.</p>
-      </div>
+      {user?.isDemo ? (
+        <div className="mt-8 hidden rounded-lg border border-ember/25 bg-ember/10 p-4 md:block">
+          <Flame className="h-5 w-5 text-ember" />
+          <p className="mt-3 text-sm font-bold">Demo mode active</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Mock data is wired to match the backend contract.</p>
+        </div>
+      ) : null}
 
       <Button variant="ghost" className="mt-auto hidden w-full md:flex" onClick={handleLogout}>
         <LogOut className="h-4 w-4" />

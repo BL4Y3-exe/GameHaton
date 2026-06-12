@@ -1,12 +1,17 @@
 import { ExternalLink } from 'lucide-react';
 import { formatPrice } from '../../utils/formatters.js';
 import Button from '../common/Button.jsx';
+import GameImage from '../common/GameImage.jsx';
 
 export default function DealCard({ deal }) {
   return (
     <article className={`overflow-hidden rounded-lg border bg-white/[0.05] ${deal.isFree ? 'border-mint/40' : 'border-white/10'}`}>
       <div className="relative">
-        <img className="aspect-[16/7] w-full object-cover" src={deal.image} alt={deal.name} />
+        <GameImage
+          className="aspect-[460/215] w-full object-cover"
+          src={deal.image}
+          alt={deal.name}
+        />
         <span className={`absolute right-3 top-3 rounded-md px-2 py-1 text-xs font-black ${deal.isFree ? 'bg-mint text-night' : 'bg-ember text-night'}`}>
           {deal.isFree ? 'FREE' : `-${deal.discountPercent}%`}
         </span>
