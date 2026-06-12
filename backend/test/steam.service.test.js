@@ -87,8 +87,7 @@ test("normalizes owned Steam games", () => {
   assert.deepEqual(game, {
     appid: 620,
     name: "Portal 2",
-    image:
-      "https://media.steampowered.com/steamcommunity/public/images/apps/620/icon-hash.jpg",
+    image: "https://cdn.akamai.steamstatic.com/steam/apps/620/header.jpg",
     playtimeMinutes: 1234,
     playtimeHours: 20.6,
     lastPlayedAt: "2025-01-01T00:00:00.000Z",

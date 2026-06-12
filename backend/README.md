@@ -1,6 +1,6 @@
-# GameHaton Backend
+# Encore Backend
 
-Express API for the GameHaton hackathon MVP. This first version is fully usable
+Express API for the Encore hackathon MVP. This first version is fully usable
 in demo mode without Steam or Supabase credentials.
 
 ## Requirements
@@ -92,7 +92,7 @@ After Steam verifies the account, the backend upserts the user in Supabase,
 issues a seven-day JWT, and redirects to:
 
 ```text
-FRONTEND_URL?token=JWT_TOKEN
+FRONTEND_URL/auth/steam/callback?token=JWT_TOKEN
 ```
 
 `STEAM_API_KEY` is optional for login. When present, it is used to save the
@@ -185,11 +185,51 @@ connection yet.
 
 ## Render deployment
 
-Create a Render Web Service with:
+The repository includes a root-level `render.yaml`. Create a Render Blueprint,
+or create a Web Service manually with:
 
 - Root directory: `backend`
-- Build command: `npm install`
+- Build command: `npm ci`
 - Start command: `npm start`
 - Health check path: `/api/health`
 
-Add the variables from `.env.example` in the Render environment settings.
+Set these Render environment variables:
+
+```text
+NODE_ENV=production
+FRONTEND_URL=https://YOUR-VERCEL-DOMAIN
+BACKEND_URL=https://YOUR-RENDER-DOMAIN
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_ROTATED_SERVICE_ROLE_KEY
+JWT_SECRET=YOUR_NEW_RANDOM_SECRET
+STEAM_API_KEY=YOUR_ROTATED_STEAM_KEY
+STEAM_RETURN_URL=https://YOUR-RENDER-DOMAIN/api/auth/steam/callback
+USE_MOCK_STEAM=false
+```
+
+Do not set `PORT`; Render provides it. Production startup validates HTTPS URLs
+and checks that `STEAM_RETURN_URL` matches `BACKEND_URL`.
+
+Deploy the frontend on Vercel with:
+
+- Root directory: `frontend`
+- Framework preset: Vite
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variable:
+  `VITE_API_URL=https://YOUR-RENDER-DOMAIN`
+
+`frontend/vercel.json` provides the React Router SPA rewrite.
+
+Recommended order:
+
+1. Create Render and note its public HTTPS URL.
+2. Deploy Vercel with `VITE_API_URL` set to the Render URL.
+3. Set Render's `FRONTEND_URL` to the production Vercel URL.
+4. Set Render's `BACKEND_URL` and `STEAM_RETURN_URL` to the Render URL.
+5. Redeploy both services after changing environment variables.
+6. Test health, demo login, Steam login, library sync, and a direct refresh of
+   `/dashboard`.
+
+Vercel preview URLs are not included in backend CORS. Use the production Vercel
+domain for the demo, or update `FRONTEND_URL` for preview testing.

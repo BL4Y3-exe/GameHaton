@@ -101,7 +101,7 @@ async function fetchJson(url, fetchImpl = global.fetch) {
     const response = await fetchImpl(url, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "GameHaton/0.1",
+        "User-Agent": "Encore/0.1",
       },
       signal: controller.signal,
     });

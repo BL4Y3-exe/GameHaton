@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", (req, res) =>
   sendSuccess(res, {
     status: "ok",
-    service: "gamehaton-backend",
+    service: "encore-backend",
     timestamp: new Date().toISOString(),
   }),
 );

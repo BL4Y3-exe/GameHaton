@@ -3,9 +3,9 @@ const recommendationService = require("../services/recommendation.service");
 const dealsService = require("../services/deals.service");
 const { sendSuccess } = require("../utils/response");
 
-function getSummary(req, res) {
-  const games = libraryService.getUserLibrary(req.user);
-  const recommendations = recommendationService.getRevivalQueue(req.user);
+async function getSummary(req, res) {
+  const games = await libraryService.getSavedUserLibrary(req.user);
+  const recommendations = await recommendationService.getRevivalQueue(req.user);
   const freeGames = dealsService.getFreeGames();
   const sales = dealsService.getSales();
   const totalPlaytimeHours = games.reduce(

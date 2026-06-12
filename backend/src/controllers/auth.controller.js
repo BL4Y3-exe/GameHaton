@@ -56,12 +56,13 @@ async function steamCallback(req, res) {
       env.jwtSecret,
       { expiresIn: "7d" },
     );
-    const redirectUrl = new URL(env.frontendUrl);
+    const redirectUrl = new URL("/auth/steam/callback", env.frontendUrl);
     redirectUrl.searchParams.set("token", token);
 
     return res.redirect(redirectUrl.toString());
   } catch (error) {
-    const redirectUrl = new URL(env.frontendUrl);
+    console.error("Steam authentication failed:", error.message);
+    const redirectUrl = new URL("/auth/steam/callback", env.frontendUrl);
     redirectUrl.searchParams.set(
       "steam_error",
       error.code || "STEAM_AUTH_FAILED",
