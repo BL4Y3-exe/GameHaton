@@ -1,8 +1,8 @@
 {
-  "name": "gamehaton-backend",
+  "name": "encore-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "Backend API for the GameHaton hackathon MVP",
+  "description": "Backend API for the Encore hackathon MVP",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

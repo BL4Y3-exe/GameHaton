@@ -201,9 +201,7 @@ function normalizeOwnedGame(game) {
   return {
     appid,
     name: game.name,
-    image: game.img_icon_url
-      ? `https://media.steampowered.com/steamcommunity/public/images/apps/${appid}/${game.img_icon_url}.jpg`
-      : `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`,
+    image: getSteamHeaderUrl(appid),
     playtimeMinutes,
     playtimeHours: Number((playtimeMinutes / 60).toFixed(1)),
     lastPlayedAt: game.rtime_last_played
@@ -213,6 +211,10 @@ function normalizeOwnedGame(game) {
     tags: [],
     storeUrl: `https://store.steampowered.com/app/${appid}`,
   };
+}
+
+function getSteamHeaderUrl(appid) {
+  return `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`;
 }
 
 function extractSteamId(claimedId) {
@@ -255,6 +257,7 @@ module.exports = {
   getPlayerProfile,
   getOwnedGames,
   normalizeOwnedGame,
+  getSteamHeaderUrl,
   extractSteamId,
   getSteamStatus,
 };
