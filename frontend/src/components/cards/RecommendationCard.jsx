@@ -1,6 +1,7 @@
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { formatDate, formatHours } from '../../utils/formatters.js';
 import Button from '../common/Button.jsx';
+import GameImage from '../common/GameImage.jsx';
 
 export default function RecommendationCard({ item, featured = false }) {
   return (
@@ -9,8 +10,12 @@ export default function RecommendationCard({ item, featured = false }) {
         featured ? 'border-mint/50 shadow-glow lg:grid lg:grid-cols-[1.05fr_1fr]' : 'border-white/10'
       }`}
     >
-      <div className="relative">
-        <img className="h-full min-h-48 w-full object-cover" src={item.image} alt={item.name} />
+      <div className="relative bg-panel">
+        <GameImage
+          className="aspect-[460/215] h-full min-h-48 w-full object-cover"
+          src={item.image}
+          alt={item.name}
+        />
         <div className="absolute left-4 top-4 rounded-lg bg-night/80 px-3 py-2 backdrop-blur">
           <p className="text-xs font-bold uppercase text-slate-400">Revival score</p>
           <p className="text-2xl font-black text-mint">{item.revivalScore}</p>

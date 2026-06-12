@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: encore-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        sync: false
+      - key: BACKEND_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: STEAM_API_KEY
+        sync: false
+      - key: STEAM_RETURN_URL
+        sync: false
+      - key: USE_MOCK_STEAM
+        value: "false"

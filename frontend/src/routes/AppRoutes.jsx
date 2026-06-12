@@ -6,6 +6,7 @@ import DashboardPage from '../pages/DashboardPage.jsx';
 import LibraryPage from '../pages/LibraryPage.jsx';
 import RevivalQueuePage from '../pages/RevivalQueuePage.jsx';
 import DealsPage from '../pages/DealsPage.jsx';
+import SteamCallbackPage from '../pages/SteamCallbackPage.jsx';
 import { isAuthenticated } from '../services/auth.js';
 
 function ProtectedRoute({ children }) {
@@ -26,6 +27,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/steam/callback" element={<SteamCallbackPage />} />
       <Route
         path="/dashboard"
         element={

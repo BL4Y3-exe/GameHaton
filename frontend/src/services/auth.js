@@ -3,7 +3,10 @@ const USER_KEY = 'gamehaton_user';
 
 export function saveSession({ token, user }) {
   localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
 }
 
 export function getToken() {

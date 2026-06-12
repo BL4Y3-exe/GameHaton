@@ -1,11 +1,16 @@
 import { ExternalLink } from 'lucide-react';
 import { formatDate, formatHours } from '../../utils/formatters.js';
 import Button from '../common/Button.jsx';
+import GameImage from '../common/GameImage.jsx';
 
 export default function GameCard({ game }) {
   return (
     <article className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.05]">
-      <img className="aspect-[16/7] w-full object-cover" src={game.image} alt={game.name} />
+      <GameImage
+        className="aspect-[460/215] w-full object-cover"
+        src={game.image}
+        alt={game.name}
+      />
       <div className="p-4">
         <h3 className="line-clamp-1 text-lg font-black text-white">{game.name}</h3>
         <div className="mt-3 flex flex-wrap gap-2">

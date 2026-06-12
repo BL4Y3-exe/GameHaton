@@ -1,6 +1,6 @@
-# GameHaton Frontend
+# Encore Frontend
 
-React + Vite frontend for the GameHaton hackathon MVP.
+React + Vite frontend for the Encore hackathon MVP.
 
 ## Setup
 
@@ -18,6 +18,19 @@ Copy `.env.example` to `.env` when connecting to the backend:
 ```bash
 VITE_API_URL=http://localhost:5000
 ```
+
+## Vercel
+
+Set the Vercel project root to `frontend`. Use the Vite preset, build command
+`npm run build`, and output directory `dist`.
+
+Configure the production environment variable:
+
+```text
+VITE_API_URL=https://YOUR-RENDER-DOMAIN
+```
+
+The included `vercel.json` rewrites React Router routes to `index.html`.
 
 ## Current MVP
 

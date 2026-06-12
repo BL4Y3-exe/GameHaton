@@ -3,14 +3,19 @@ import { mockRecommendations } from '../data/mockRecommendations.js';
 import { mockFreeGames, mockSales } from '../data/mockDeals.js';
 import { getToken, saveSession } from './auth.js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:5000' : '')
+).replace(/\/$/, '');
 
 export function getSteamLoginUrl() {
+  ensureApiUrl();
   return `${API_URL}/api/auth/steam`;
 }
 
 async function request(path, options = {}, fallback) {
   try {
+    ensureApiUrl();
     const token = getToken();
     const response = await fetch(`${API_URL}${path}`, {
       ...options,
@@ -28,9 +33,27 @@ async function request(path, options = {}, fallback) {
 
     return payload.data;
   } catch (error) {
-    if (fallback !== undefined) return fallback;
+    if (import.meta.env.DEV && fallback !== undefined) return fallback;
     throw error;
   }
+}
+
+function ensureApiUrl() {
+  if (!API_URL) {
+    throw new Error('VITE_API_URL is not configured for this deployment.');
+  }
+}
+
+function normalizeUser(user) {
+  if (!user) return mockUser;
+
+  return {
+    id: user.id,
+    displayName: user.displayName ?? user.display_name ?? 'Player',
+    avatarUrl: user.avatarUrl ?? user.avatar_url ?? null,
+    isDemo: user.isDemo ?? user.is_demo ?? false,
+    steamId: user.steamId ?? user.steam_id ?? null,
+  };
 }
 
 function dashboardSummary() {
@@ -49,34 +72,72 @@ export async function demoLogin() {
     user: mockUser,
   };
   const data = await request('/api/auth/demo', { method: 'POST' }, fallback);
-  saveSession(data);
-  return data;
+  const session = {
+    token: data.token,
+    user: normalizeUser(data.user),
+  };
+  saveSession(session);
+  return session;
 }
 
-export function getCurrentUser() {
-  return request('/api/user/me', {}, mockUser);
+export async function getCurrentUser({ allowFallback = true } = {}) {
+  const fallback = allowFallback ? { user: mockUser } : undefined;
+  const data = await request('/api/user/me', {}, fallback);
+  return normalizeUser(data.user ?? data);
 }
 
-export function syncLibrary() {
-  return request('/api/library/sync', { method: 'POST' }, { synced: true, games: mockLibrary.length });
+export async function syncLibrary() {
+  const data = await request(
+    '/api/library/sync',
+    { method: 'POST' },
+    { games: mockLibrary, syncedCount: mockLibrary.length, source: 'mock' },
+  );
+
+  return {
+    games: data.games ?? [],
+    syncedCount: data.syncedCount ?? data.synced_count ?? data.games?.length ?? 0,
+    source: data.source ?? 'unknown',
+  };
 }
 
-export function getLibrary() {
-  return request('/api/library', {}, mockLibrary);
+export async function getLibrary() {
+  const data = await request('/api/library', {}, { games: mockLibrary });
+  return Array.isArray(data) ? data : data.games ?? [];
 }
 
-export function getRevivalQueue() {
-  return request('/api/revival-queue', {}, mockRecommendations);
+export async function getRevivalQueue() {
+  const data = await request(
+    '/api/revival-queue',
+    {},
+    { recommendations: mockRecommendations },
+  );
+  return Array.isArray(data) ? data : data.recommendations ?? [];
 }
 
-export function getFreeGames() {
-  return request('/api/free-games', {}, mockFreeGames);
+export async function getFreeGames() {
+  const data = await request('/api/free-games', {}, { games: mockFreeGames });
+  return Array.isArray(data) ? data : data.games ?? [];
 }
 
-export function getSales() {
-  return request('/api/sales', {}, mockSales);
+export async function getSales() {
+  const data = await request('/api/sales', {}, { sales: mockSales });
+  return Array.isArray(data) ? data : data.sales ?? [];
 }
 
-export function getDashboardSummary() {
-  return request('/api/dashboard/summary', {}, dashboardSummary());
+export async function getDashboardSummary() {
+  const data = await request(
+    '/api/dashboard/summary',
+    {},
+    dashboardSummary(),
+  );
+
+  if ('totalGames' in data) return data;
+
+  return {
+    totalGames: data.total_games ?? 0,
+    totalPlaytimeHours: data.total_playtime_hours ?? 0,
+    comebackRecommendations: data.comeback_recommendations ?? 0,
+    activeDeals: (data.free_games ?? 0) + (data.sales ?? 0),
+    topRecommendedGame: data.top_recommended_game ?? null,
+  };
 }

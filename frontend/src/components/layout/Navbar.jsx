@@ -10,7 +10,7 @@ export default function Navbar() {
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-mint text-night">
             <Gamepad2 className="h-5 w-5" />
           </span>
-          GameHaton
+          Encore
         </Link>
         <div className="flex items-center gap-2">
           <Button as={Link} to="/login" variant="ghost" className="hidden sm:inline-flex">
