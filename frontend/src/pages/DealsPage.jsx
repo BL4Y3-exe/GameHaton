@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PageHeader from '../components/layout/PageHeader.jsx';
 import LoadingState from '../components/common/LoadingState.jsx';
 import EmptyState from '../components/common/EmptyState.jsx';
+import ErrorState from '../components/common/ErrorState.jsx';
 import DealCard from '../components/cards/DealCard.jsx';
 import { getFreeGames, getSales } from '../services/api.js';
 
@@ -11,13 +12,23 @@ export default function DealsPage() {
 
   useEffect(() => {
     async function load() {
-      const [freeGames, sales] = await Promise.all([getFreeGames(), getSales()]);
-      setState({ loading: false, freeGames, sales });
+      try {
+        const [freeGames, sales] = await Promise.all([getFreeGames(), getSales()]);
+        setState({ loading: false, freeGames, sales });
+      } catch (error) {
+        setState({
+          loading: false,
+          freeGames: [],
+          sales: [],
+          error: error.message || 'Could not load deals.',
+        });
+      }
     }
     load();
   }, []);
 
   if (state.loading) return <LoadingState label="Scanning deals" />;
+  if (state.error) return <ErrorState message={state.error} />;
 
   const visibleDeals = activeTab === 'free' ? state.freeGames : state.sales;
 

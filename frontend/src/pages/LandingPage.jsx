@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Gamepad2, Gift, Library, RefreshCw, Sparkles, Trophy } from 'lucide-react';
+import { Gamepad2, Gift, Library, RefreshCw, Sparkles } from 'lucide-react';
 import Navbar from '../components/layout/Navbar.jsx';
 import Button from '../components/common/Button.jsx';
 import { demoLogin, getSteamLoginUrl } from '../services/api.js';
@@ -27,11 +27,7 @@ export default function LandingPage() {
       <main className="pt-16">
         <section className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:px-8">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-md border border-mint/30 bg-mint/10 px-3 py-1 text-sm font-bold text-mint">
-              <Trophy className="h-4 w-4" />
-              Hackathon-ready gaming dashboard
-            </span>
-            <h1 className="mt-6 max-w-4xl text-5xl font-black leading-tight md:text-7xl">GameHaton</h1>
+            <h1 className="max-w-4xl text-5xl font-black leading-tight md:text-7xl">Encore</h1>
             <p className="mt-5 max-w-2xl text-xl leading-8 text-slate-300">
               Rediscover games you already own and never miss free games or major discounts.
             </p>
