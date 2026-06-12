@@ -84,6 +84,10 @@ test("loads and normalizes saved Supabase games", async () => {
   );
 
   assertNormalizedGames(games);
+  assert.equal(
+    games[0].image,
+    "https://cdn.akamai.steamstatic.com/steam/apps/620/header.jpg",
+  );
   assert.deepEqual(games[0].genres, ["Puzzle"]);
   assert.deepEqual(games[0].tags, ["Co-op"]);
 });

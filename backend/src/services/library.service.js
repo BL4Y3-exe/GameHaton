@@ -62,7 +62,7 @@ function normalizeSavedGame(row) {
   return {
     appid: row.appid,
     name: row.name,
-    image: row.image,
+    image: steamService.getSteamHeaderUrl(row.appid),
     playtimeMinutes: row.playtime_minutes,
     playtimeHours: Number(row.playtime_hours),
     lastPlayedAt: row.last_played_at,

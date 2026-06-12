@@ -1,9 +1,9 @@
 const app = require("./app");
 const env = require("./config/env");
 
-const server = app.listen(env.port, () => {
+const server = app.listen(env.port, "0.0.0.0", () => {
   console.log(
-    `GameHaton API listening on ${env.backendUrl} in ${env.nodeEnv} mode`,
+    `Encore API listening on ${env.backendUrl} in ${env.nodeEnv} mode`,
   );
 });
 

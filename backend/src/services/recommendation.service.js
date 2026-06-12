@@ -21,15 +21,15 @@ const RECOGNIZABLE_APP_IDS = new Set([
   1245620,
 ]);
 
-function getRevivalQueue(user, limit = DEFAULT_LIMIT) {
+async function getRevivalQueue(user, limit = DEFAULT_LIMIT) {
   const saleAppIds = new Set(dealsService.getSales().map((deal) => deal.appid));
   const freeAppIds = new Set(
     dealsService.getFreeGames().map((deal) => deal.appid),
   );
   const resultLimit = clamp(Math.floor(Number(limit) || DEFAULT_LIMIT), 1, MAX_LIMIT);
+  const games = await libraryService.getSavedUserLibrary(user);
 
-  return libraryService
-    .getUserLibrary(user)
+  return games
     .filter(hasPlayHistory)
     .map((game) =>
       scoreGame(game, {

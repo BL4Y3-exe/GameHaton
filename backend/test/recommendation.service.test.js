@@ -3,9 +3,9 @@ const assert = require("node:assert/strict");
 const demoService = require("../src/services/demo.service");
 const recommendationService = require("../src/services/recommendation.service");
 
-test("demo Revival Queue returns ranked inactive games", () => {
+test("demo Revival Queue returns ranked inactive games", async () => {
   const user = demoService.getOrCreateDemoUser();
-  const recommendations = recommendationService.getRevivalQueue(user);
+  const recommendations = await recommendationService.getRevivalQueue(user);
 
   assert.equal(recommendations.length, 8);
 
@@ -26,9 +26,9 @@ test("demo Revival Queue returns ranked inactive games", () => {
   }
 });
 
-test("Revival Queue never returns more than ten games", () => {
+test("Revival Queue never returns more than ten games", async () => {
   const user = demoService.getOrCreateDemoUser();
-  const recommendations = recommendationService.getRevivalQueue(user, 100);
+  const recommendations = await recommendationService.getRevivalQueue(user, 100);
 
   assert.ok(recommendations.length <= 10);
 });

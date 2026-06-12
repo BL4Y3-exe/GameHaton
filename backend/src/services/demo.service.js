@@ -5,7 +5,7 @@ const demoUserSeed = {
   id: DEMO_USER_ID,
   steam_id: null,
   display_name: "Alex Respawn",
-  avatar_url: "https://api.dicebear.com/9.x/pixel-art/svg?seed=GameHaton",
+  avatar_url: "https://api.dicebear.com/9.x/pixel-art/svg?seed=Encore",
   is_demo: true,
 };
 
